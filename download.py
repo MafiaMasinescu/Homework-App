@@ -3,8 +3,8 @@ import customtkinter as ctk
 import re
 import json
 
-ver = 1.01
-
+ver = 1.02
+print("Nigga")
 app = ctk.CTk()
 app.geometry("800x600")
 api_url = "https://raw.githubusercontent.com/MafiaMasinescu/Proiect-Facultate-I/main/utils.py"
