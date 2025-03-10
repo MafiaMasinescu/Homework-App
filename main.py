@@ -4,17 +4,19 @@ from PIL import Image
 import customtkinter as ctk
 import os
 import sys
+import download
+from tkinter import messagebox
 
-build = 1
+build = 0.99
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
+app = ctk.CTk()
+app.title("Login")
+app.minsize(800, 600)
+app.maxsize(800, 600)
+app.resizable(False, False)
 
 def LoginFrame():
-    app = ctk.CTk()
-    app.title("Login")
-    app.minsize(800, 600)
-    app.maxsize(800, 600)
-    app.resizable(False, False)
 
     if getattr(sys, 'frozen', False):  # Check if running as a bundled app
         image_path = os.path.join(sys._MEIPASS, 'images/pattern.png')
@@ -50,10 +52,31 @@ def LoginFrame():
         def return_to_login():
             settings_overlay.destroy()
             back_button.destroy()
+            download_button.destroy()
+            currver.destroy()
+            check_update.destroy()
         
+        def check_for_update():
+            latest_version = download.get_latest_version(build)
+            if latest_version > build:
+                download_button.place(relx = 0.5 , rely = 0.6 , anchor="center")
+                currver.place(relx = 0.5 , rely = 0.5 , anchor="center")
+                currver.configure(text=f"Current Version: {build} | Latest Version: {latest_version}")
+            else:
+                messagebox.showinfo("No Update", "No new updates available.")
+                
+        check_update = ctk.CTkButton(master=app , text="Check for updates" ,
+                                    command=lambda: check_for_update(),
+                                    bg_color="black" , fg_color="black" , width=25, height=15 ,)
+        check_update.place(relx = 0.5 , rely = 0.4 , anchor="center")
+        currver = ctk.CTkLabel(master=app, text=f"Current Version: {build}", bg_color="black", fg_color="black")
+        currver.place(relx = 0.5 , rely = 0.5 , anchor="center")
+        download_button = ctk.CTkButton(master=app , text="Download update" ,
+                                    command=lambda: download.download(build),
+                                    bg_color="black" , fg_color="black" , width=25, height=15 ,)
 
     print("Time taken to load: ", datetime.datetime.now() - start_time)
-    app.mainloop()
 
 if __name__ == "__main__":
     LoginFrame()
+    app.mainloop()
