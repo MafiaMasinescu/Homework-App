@@ -5,6 +5,8 @@ import os
 import sys
 import shutil
 from tkinter import messagebox
+import time
+import psutil
 
 API_URL = f"https://api.github.com/repos/MafiaMasinescu/Homework-App/releases/latest"
 
@@ -13,7 +15,11 @@ API_URL = f"https://api.github.com/repos/MafiaMasinescu/Homework-App/releases/la
 #down_but = ctk.CTkButton(app, text="Download Update", command=lambda: download())
 #down_but.pack()
 
-app_path =  __file__  # Get path of current script/exe
+
+if getattr(sys, 'frozen', False):
+    app_path = sys.executable
+else:
+    app_path = os.path.abspath(__file__)
 
 def get_latest_version(ver):
     """Fetches the latest version from GitHub API."""
@@ -31,13 +37,9 @@ def get_latest_version(ver):
 
 def download(ver):
     """Downloads and updates the script or executable."""
-    global latest_version , app_path
-    
-    if latest_version is None:
-        print("Failed to check for updates.")
-        return
-        
-    update_url = f"https://github.com/MafiaMasinescu/Homework-App/releases/latest/download/Homework-App.exe"
+    global app_path
+
+    update_url = f"https://github.com/MafiaMasinescu/Homework-App/releases/latest/download/main.exe"
     response = requests.get(update_url, stream=True)
     if response.status_code == 200:
         backup_file = app_path + ".bak"
@@ -53,7 +55,13 @@ def download(ver):
                 f.write(chunk)
         
         print(f"Update downloaded: {update_file}")
-
+        
+        for proc in psutil.process_iter(['pid', 'name']):
+            if "main.exe" in proc.info['name'].lower():
+                print(f"Terminating process {proc.info['name']} (PID {proc.info['pid']})...")
+                psutil.Process(proc.info['pid']).terminate()
+                time.sleep(2)
+        
         # Replace old file with new update
         os.replace(update_file, app_path)
         print("Update successful! Restarting...")

