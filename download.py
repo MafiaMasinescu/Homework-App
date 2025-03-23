@@ -1,25 +1,20 @@
 import requests
-import customtkinter as ctk
-import re
 import os
 import sys
 import shutil
 from tkinter import messagebox
-import time
-import psutil
+import subprocess
 
 API_URL = f"https://api.github.com/repos/MafiaMasinescu/Homework-App/releases/latest"
-
-#check_down = ctk.CTkButton(app, text="Check Version", command=lambda: check_update())
-#check_down.pack()
-#down_but = ctk.CTkButton(app, text="Download Update", command=lambda: download())
-#down_but.pack()
-
 
 if getattr(sys, 'frozen', False):
     app_path = sys.executable
 else:
     app_path = os.path.abspath(__file__)
+
+bat_path = os.path.join(os.path.dirname(app_path), "update.bat")
+if os.path.exists(bat_path):
+    os.remove(bat_path)
 
 def get_latest_version(ver):
     """Fetches the latest version from GitHub API."""
@@ -55,19 +50,35 @@ def download(ver):
                 f.write(chunk)
         
         print(f"Update downloaded: {update_file}")
-        
-        for proc in psutil.process_iter(['pid', 'name']):
-            if "main.exe" in proc.info['name'].lower():
-                print(f"Terminating process {proc.info['name']} (PID {proc.info['pid']})...")
-                psutil.Process(proc.info['pid']).terminate()
-                time.sleep(2)
-        
-        # Replace old file with new update
-        os.replace(update_file, app_path)
-        print("Update successful! Restarting...")
 
-        # Restart script or executable
-        os.execv(app_path, sys.argv)
+        def batch_update():
+            """Batch file to replace old file with new update."""
+            batch_file = os.path.join(os.path.dirname(app_path), "update.bat")
+            with open(batch_file, "w") as f:
+                f.write(f'@echo off\n')
+                f.write(f'taskkill /f /im main.exe\n')
+                f.write(f'timeout /t 2 /nobreak >nul\n')
+                f.write(f'move /y "{update_file}" "{app_path}"\n')  
+                #f.write(f'del /f "{app_path}"\n')
+                #f.write(f'rename "{update_file}" "main.exe"\n')
+                f.write(f'start "" "{app_path}"\n')
+                f.write(f'del /f "%~f0"\n')
+
+        batch_update()
+        subprocess.Popen(["cmd", "/c", bat_path], creationflags=subprocess.CREATE_NO_WINDOW)
+        sys.exit(0)
+       # for proc in psutil.process_iter(['pid', 'name']):
+       #     if "main.exe" in proc.info['name'].lower():
+       #         print(f"Terminating process {proc.info['name']} (PID {proc.info['pid']})...")
+       #         psutil.Process(proc.info['pid']).terminate()
+       #         time.sleep(2)
+       # 
+       # # Replace old file with new update
+       # os.replace(update_file, app_path)
+       # print("Update successful! Restarting...")
+#
+       # # Restart script or executable
+       # os.execv(app_path, sys.argv)
     else:
         messagebox.showerror("Error", f"Failed to download update: {response.status_code}")
 

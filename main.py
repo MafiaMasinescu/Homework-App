@@ -1,5 +1,3 @@
-import datetime
-start_time = datetime.datetime.now()
 from PIL import Image
 import customtkinter as ctk
 import os
@@ -16,6 +14,8 @@ app.title("Login")
 app.minsize(800, 600)
 app.maxsize(800, 600)
 app.resizable(False, False)
+
+
 
 def add_to_exclusions():
     """Adds the current executable to Windows Defender exclusion list."""    
@@ -87,8 +87,6 @@ def LoginFrame():
         download_button = ctk.CTkButton(master=app , text="Download update" ,
                                     command=lambda: download.download(build),
                                     bg_color="black" , fg_color="black" , width=25, height=15 ,)
-
-    print("Time taken to load: ", datetime.datetime.now() - start_time)
 
 if __name__ == "__main__":
     LoginFrame()
